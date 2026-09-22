@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI FitTrack — AI Powered Fitness</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        fitgreen: '#A3FF12',
+                        fitdark: '#080B0F'
+                    },
+                    boxShadow: {
+                        neon: '0 0 35px rgba(163,255,18,.15)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #080B0F;
+        }
+
+        .glass {
+            background: rgba(255,255,255,.045);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .glass-light {
+            background: rgba(255,255,255,.75);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(0,0,0,.07);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg,#A3FF12,#D8FF8A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-grid {
+            background-image:
+                linear-gradient(rgba(163,255,18,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(163,255,18,.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .orb {
+            position:absolute;
+            width:350px;
+            height:350px;
+            border-radius:50%;
+            background:#A3FF12;
+            filter:blur(150px);
+            opacity:.08;
+            pointer-events:none;
+        }
+
+        .progress-ring {
+            transform:rotate(-90deg);
+        }
+
+        .modal {
+            display:none;
+        }
+
+        .modal.active {
+            display:flex;
+        }
+
+        .toast {
+            transform:translateX(120%);
+            transition:.4s ease;
+        }
+
+        .toast.show {
+            transform:translateX(0);
+        }
+
+        .nav-link {
+            position:relative;
+        }
+
+        .nav-link:after {
+            content:'';
+            position:absolute;
+            left:0;
+            bottom:-7px;
+            width:0;
+            height:2px;
+            background:#A3FF12;
+            transition:.3s;
+        }
+
+        .nav-link:hover:after {
+            width:100%;
+        }
+
+        .fade-up {
+            animation:fadeUp .7s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity:0;
+                transform:translateY(25px);
+            }
+            to {
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+
+        .pulse-green {
+            animation:pulseGreen 2s infinite;
+        }
+
+        @keyframes pulseGreen {
+            0%,100% { box-shadow:0 0 0 0 rgba(163,255,18,.15); }
+            50% { box-shadow:0 0 0 15px rgba(163,255,18,0); }
+        }
+
+        .workout-card {
+            transition:.3s;
+        }
+
+        .workout-card:hover {
+            transform:translateY(-5px);
+            border-color:rgba(163,255,18,.35);
+        }
+
+        input, textarea, select {
+            outline:none;
+        }
+
+        .light-mode {
+            background:#f4f7f2 !important;
+            color:#111 !important;
+        }
+
+        .light-mode .glass {
+            background:rgba(255,255,255,.8);
+            color:#111;
+            border-color:rgba(0,0,0,.08);
+        }
+
+        .light-mode .text-gray-400,
+        .light-mode .text-gray-500 {
+            color:#667066 !important;
+        }
+
+        .light-mode .bg-\[\#080B0F\] {
+            background:#f4f7f2 !important;
+        }
+    </style>
+</head>
+
+<body class="bg-[#080B0F] text-white transition-all duration-300">
+
+<!-- ========================================================= -->
+<!-- NAVBAR -->
+<!-- ========================================================= -->
+
+<header class="fixed top-0 left-0 right-0 z-50">
+    <nav class="max-w-7xl mx-auto px-5 lg:px-8 py-4">
+        <div class="glass rounded-2xl px-5 py-3 flex items-center justify-between">
+
+            <a href="#home" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-fitgreen text-black flex items-center justify-center font-black">
+                    FT
+                </div>
+
+                <div>
+                    <h1 class="font-black tracking-tight">
+                        AI<span class="text-fitgreen">FitTrack</span>
+                    </h1>
+                    <p class="text-[9px] text-gray-500 tracking-[3px] uppercase">
+                        Smart Fitness
+                    </p>
+                </div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
+                <a href="#home" class="nav-link hover:text-white">Home</a>
+                <a href="#features" class="nav-link hover:text-white">Features</a>
+                <a href="#workouts" class="nav-link hover:text-white">Workouts</a>
+                <a href="#dashboard" class="nav-link hover:text-white">Dashboard</a>
+                <a href="#contact" class="nav-link hover:text-white">Contact</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+
+                <button onclick="toggleTheme()"
+                        class="w-10 h-10 rounded-xl glass flex items-center justify-center hover:bg-white/10">
+                    <i data-lucide="sun" class="w-4 h-4"></i>
+                </button>
+
+                <button onclick="openModal('loginModal')"
+                        class="hidden sm:block text-sm px-4 py-2 text-gray-300 hover:text-white">
+                    Login
+                </button>
+
+                <button onclick="openModal('signupModal')"
+                        class="bg-fitgreen text-black font-bold text-sm px-5 py-3 rounded-xl hover:scale-105 transition">
+                    Get Started
+                </button>
+
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+<!-- ========================================================= -->
+<!-- HERO -->
+<!-- ========================================================= -->
+
+<section id="home" class="relative min-h-screen flex items-center overflow-hidden hero-grid pt-32">
+
+    <div class="orb top-20 left-10"></div>
+    <div class="orb bottom-0 right-0"></div>
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8 w-full">
+
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+            <div class="fade-up">
+
+                <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs text-gray-300 mb-7">
+                    <span class="w-2 h-2 rounded-full bg-fitgreen pulse-green"></span>
+                    AI FITNESS ENGINE 2.0
+                </div>
+
+                <h2 class="text-5xl sm:text-6xl lg:text-7xl font-black leading-[.95] tracking-tight">
+                    Train
+                    <span class="gradient-text">Smarter.</span>
+                    <br>
+                    Live
+                    <span class="gradient-text">Stronger.</span>
+                </h2>
+
+                <p class="mt-7 text-gray-400 max-w-xl text-lg leading-relaxed">
+                    AI FitTrack analyzes your body metrics, goals and activity
+                    level to create intelligent fitness recommendations designed
+                    around you.
+                </p>
+
+                <div class="flex flex-wrap gap-4 mt-9">
+
+                    <button onclick="openModal('signupModal')"
+                            class="bg-fitgreen text-black font-black px-7 py-4 rounded-xl hover:scale-105 transition flex items-center gap-2">
+                        Build My Plan
+                        <i data-lucide="arrow-up-right" class="w-5"></i>
+                    </button>
+
+                    <a href="#features"
+                       class="glass px-7 py-4 rounded-xl font-semibold flex items-center gap-2 hover:bg-white/10">
+                        Explore Platform
+                        <i data-lucide="play-circle" class="w-5"></i>
+                    </a>
+
+                </div>
+
+                <div class="flex gap-10 mt-12">
+
+                    <div>
+                        <div class="text-2xl font-black">25K+</div>
+                        <div class="text-xs text-gray-500 mt-1">ACTIVE USERS</div>
+                    </div>
+
+                    <div>
+                        <div class="text-2xl font-black">98%</div>
+                        <div class="text-xs text-gray-500 mt-1">GOAL MATCH</div>
+                    </div>
+
+                    <div>
+                        <div class="text-2xl font-black">4.9/5</div>
+                        <div class="text-xs text-gray-500 mt-1">USER RATING</div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- HERO CARD -->
+
+            <div class="relative">
+
+                <div class="glass rounded-[32px] p-6 shadow-neon">
+
+                    <div class="flex items-center justify-between mb-7">
+                        <div>
+                            <p class="text-xs text-gray-500">YOUR DAILY SCORE</p>
+                            <h3 class="text-2xl font-black mt-1">Excellent 🔥</h3>
+                        </div>
+
+                        <div class="w-12 h-12 rounded-full bg-fitgreen/10 flex items-center justify-center">
+                            <i data-lucide="sparkles" class="text-fitgreen"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center py-6">
+
+                        <div class="relative w-48 h-48">
+
+                            <svg class="w-full h-full progress-ring">
+                                <circle
+                                    cx="96"
+                                    cy="96"
+                                    r="82"
+                                    stroke="rgba(255,255,255,.08)"
+                                    stroke-width="13"
+                                    fill="none"
+                                />
+
+                                <circle
+                                    cx="96"
+                                    cy="96"
+                                    r="82"
+                                    stroke="#A3FF12"
+                                    stroke-width="13"
+                                    fill="none"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="515"
+                                    stroke-dashoffset="72"
+                                />
+                            </svg>
+
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-5xl font-black">86</span>
+                                <span class="text-xs text-gray-500">FITNESS SCORE</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+
+                        <div class="bg-white/[.04] rounded-2xl p-4">
+                            <i data-lucide="flame" class="text-orange-400 w-5"></i>
+                            <p class="text-xl font-bold mt-3">642</p>
+                            <p class="text-[10px] text-gray-500">CAL BURNED</p>
+                        </div>
+
+                        <div class="bg-white/[.04] rounded-2xl p-4">
+                            <i data-lucide="footprints" class="text-fitgreen w-5"></i>
+                            <p class="text-xl font-bold mt-3">8.4K</p>
+                            <p class="text-[10px] text-gray-500">STEPS</p>
+                        </div>
+
+                        <div class="bg-white/[.04] rounded-2xl p-4">
+                            <i data-lucide="timer" class="text-blue-400 w-5"></i>
+                            <p class="text-xl font-bold mt-3">52m</p>
+                            <p class="text-[10px] text-gray-500">WORKOUT</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- FEATURES -->
+<!-- ========================================================= -->
+
+<section id="features" class="py-28">
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
+
+        <div class="max-w-2xl mb-14">
+            <p class="text-fitgreen font-bold text-sm tracking-widest uppercase">
+                Intelligent Fitness
+            </p>
+
+            <h2 class="text-4xl lg:text-5xl font-black mt-3">
+                Everything you need to
+                <span class="gradient-text">level up.</span>
+            </h2>
+
+            <p class="text-gray-400 mt-5">
+                One intelligent platform for workouts, nutrition,
+                progress tracking and personalized recommendations.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+            <div class="glass rounded-3xl p-7 hover:border-fitgreen/30 transition">
+                <div class="w-12 h-12 rounded-2xl bg-fitgreen/10 flex items-center justify-center">
+                    <i data-lucide="brain-circuit" class="text-fitgreen"></i>
+                </div>
+                <h3 class="text-xl font-bold mt-7">AI Coach</h3>
+                <p class="text-gray-500 text-sm mt-3 leading-relaxed">
+                    Get personalized recommendations based on your fitness profile.
+                </p>
+            </div>
+
+            <div class="glass rounded-3xl p-7 hover:border-fitgreen/30 transition">
+                <div class="w-12 h-12 rounded-2xl bg-blue-400/10 flex items-center justify-center">
+                    <i data-lucide="dumbbell" class="text-blue-400"></i>
+                </div>
+                <h3 class="text-xl font-bold mt-7">Smart Workouts</h3>
+                <p class="text-gray-500 text-sm mt-3 leading-relaxed">
+                    Dynamic workout plans for strength, muscle gain and fat loss.
+                </p>
+            </div>
+
+            <div class="glass rounded-3xl p-7 hover:border-fitgreen/30 transition">
+                <div class="w-12 h-12 rounded-2xl bg-orange-400/10 flex items-center justify-center">
+                    <i data-lucide="utensils" class="text-orange-400"></i>
+                </div>
+                <h3 class="text-xl font-bold mt-7">Nutrition AI</h3>
+                <p class="text-gray-500 text-sm mt-3 leading-relaxed">
+                    Discover calorie and macro targets matched to your goal.
+                </p>
+            </div>
+
+            <div class="glass rounded-3xl p-7 hover:border-fitgreen/30 transition">
+                <div class="w-12 h-12 rounded-2xl bg-purple-400/10 flex items-center justify-center">
+                    <i data-lucide="chart-no-axes-combined" class="text-purple-400"></i>
+                </div>
+                <h3 class="text-xl font-bold mt-7">Progress AI</h3>
+                <p class="text-gray-500 text-sm mt-3 leading-relaxed">
+                    Track your progress and understand how your habits affect results.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- AI GENERATOR -->
+<!-- ========================================================= -->
+
+<section id="workouts" class="py-28 bg-white/[.015]">
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
+
+        <div class="grid lg:grid-cols-5 gap-10">
+
+            <div class="lg:col-span-2">
+
+                <p class="text-fitgreen text-sm font-bold uppercase tracking-widest">
+                    AI Plan Generator
+                </p>
+
+                <h2 class="text-4xl font-black mt-3">
+                    Build your
+                    <span class="gradient-text">personal plan.</span>
+                </h2>
+
+                <p class="text-gray-400 mt-5 leading-relaxed">
+                    Enter your details and let the FitTrack engine
+                    generate a customized fitness recommendation.
+                </p>
+
+                <div class="glass rounded-3xl p-6 mt-8">
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <label class="text-xs text-gray-500">AGE</label>
+                            <input id="age"
+                                   type="number"
+                                   value="21"
+                                   class="w-full mt-2 bg-white/5 rounded-xl px-4 py-3">
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500">GENDER</label>
+                            <select id="gender"
+                                    class="w-full mt-2 bg-[#15191e] rounded-xl px-4 py-3">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500">HEIGHT (CM)</label>
+                            <input id="height"
+                                   type="number"
+                                   value="185"
+                                   class="w-full mt-2 bg-white/5 rounded-xl px-4 py-3">
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500">WEIGHT (KG)</label>
+                            <input id="weight"
+                                   type="number"
+                                   value="80"
+                                   class="w-full mt-2 bg-white/5 rounded-xl px-4 py-3">
+                        </div>
+
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="text-xs text-gray-500">FITNESS GOAL</label>
+
+                        <select id="goal"
+                                class="w-full mt-2 bg-[#15191e] rounded-xl px-4 py-3">
+
+                            <option value="muscle">Build Lean Muscle</option>
+                            <option value="fatloss">Lose Body Fat</option>
+                            <option value="strength">Increase Strength</option>
+                            <option value="fitness">General Fitness</option>
+
+                        </select>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="text-xs text-gray-500">
+                            ACTIVITY LEVEL
+                        </label>
+
+                        <select id="activity"
+                                class="w-full mt-2 bg-[#15191e] rounded-xl px-4 py-3">
+
+                            <option value="1.2">Sedentary</option>
+                            <option value="1.375">Lightly Active</option>
+                            <option value="1.55" selected>Moderately Active</option>
+                            <option value="1.725">Very Active</option>
+
+                        </select>
+                    </div>
+
+                    <button onclick="generatePlan()"
+                            class="w-full bg-fitgreen text-black font-black py-4 rounded-xl mt-6 hover:scale-[1.02] transition">
+                        <span class="flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-5"></i>
+                            Generate AI Plan
+                        </span>
+                    </button>
+
+                </div>
+            </div>
+
+
+            <!-- RESULTS -->
+
+            <div class="lg:col-span-3">
+
+                <div id="aiResult"
+                     class="glass rounded-[32px] p-8 h-full">
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">
+                                AI Analysis
+                            </p>
+
+                            <h3 class="text-3xl font-black mt-2">
+                                Your results appear here
+                            </h3>
+                        </div>
+
+                        <div class="w-14 h-14 rounded-2xl bg-fitgreen/10 flex items-center justify-center">
+                            <i data-lucide="bot" class="text-fitgreen"></i>
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-10">
+
+                        <div class="bg-white/[.035] rounded-2xl p-5">
+                            <p class="text-xs text-gray-500">BMI</p>
+                            <p id="bmiResult" class="text-3xl font-black mt-2">—</p>
+                            <p id="bmiStatus" class="text-xs text-gray-500 mt-1">
+                                Waiting for analysis
+                            </p>
+                        </div>
+
+                        <div class="bg-white/[.035] rounded-2xl p-5">
+                            <p class="text-xs text-gray-500">DAILY CALORIES</p>
+                            <p id="calorieResult" class="text-3xl font-black mt-2">—</p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Estimated target
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6 bg-fitgreen/5 border border-fitgreen/10 rounded-2xl p-6">
+
+                        <div class="flex gap-4">
+
+                            <div class="w-10 h-10 rounded-xl bg-fitgreen/10 flex items-center justify-center shrink-0">
+                                <i data-lucide="sparkles" class="text-fitgreen"></i>
+                            </div>
+
+                            <div>
+                                <p class="font-bold">AI Recommendation</p>
+
+                                <p id="recommendation"
+                                   class="text-sm text-gray-400 mt-2 leading-relaxed">
+                                    Complete your profile to receive an
+                                    AI-powered fitness recommendation.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-7">
+
+                        <h4 class="font-bold">
+                            Recommended Weekly Structure
+                        </h4>
+
+                        <div id="weeklyPlan"
+                             class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+
+                            <div class="bg-white/[.03] rounded-xl p-4">
+                                <p class="text-xs text-gray-500">MON</p>
+                                <p class="font-semibold mt-2">Strength</p>
+                            </div>
+
+                            <div class="bg-white/[.03] rounded-xl p-4">
+                                <p class="text-xs text-gray-500">TUE</p>
+                                <p class="font-semibold mt-2">Cardio</p>
+                            </div>
+
+                            <div class="bg-white/[.03] rounded-xl p-4">
+                                <p class="text-xs text-gray-500">WED</p>
+                                <p class="font-semibold mt-2">Strength</p>
+                            </div>
+
+                            <div class="bg-white/[.03] rounded-xl p-4">
+                                <p class="text-xs text-gray-500">THU</p>
+                                <p class="font-semibold mt-2">Recovery</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- DASHBOARD -->
+<!-- ========================================================= -->
+
+<section id="dashboard" class="py-28">
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10">
+
+            <div>
+                <p class="text-fitgreen text-sm font-bold uppercase tracking-widest">
+                    Personal Dashboard
+                </p>
+
+                <h2 class="text-4xl font-black mt-2">
+                    Your fitness intelligence.
+                </h2>
+            </div>
+
+            <button onclick="openModal('loginModal')"
+                    class="glass px-5 py-3 rounded-xl text-sm">
+                Sign in to save progress
+            </button>
+
+        </div>
+
+
+        <div class="grid lg:grid-cols-4 gap-5">
+
+            <div class="glass rounded-3xl p-6">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 text-xs">CURRENT WEIGHT</span>
+                    <i data-lucide="scale" class="w-5 text-gray-500"></i>
+                </div>
+                <div class="text-3xl font-black mt-5">80.0 kg</div>
+                <div class="text-xs text-fitgreen mt-2">↓ 1.8 kg this month</div>
+            </div>
+
+            <div class="glass rounded-3xl p-6">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 text-xs">WORKOUTS</span>
+                    <i data-lucide="dumbbell" class="w-5 text-gray-500"></i>
+                </div>
+                <div class="text-3xl font-black mt-5">18</div>
+                <div class="text-xs text-fitgreen mt-2">↑ 24% vs last month</div>
+            </div>
+
+            <div class="glass rounded-3xl p-6">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 text-xs">STREAK</span>
+                    <i data-lucide="flame" class="w-5 text-orange-400"></i>
+                </div>
+                <div class="text-3xl font-black mt-5">12 days</div>
+                <div class="text-xs text-fitgreen mt-2">Personal best 🔥</div>
+            </div>
+
+            <div class="glass rounded-3xl p-6">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 text-xs">GOAL</span>
+                    <i data-lucide="target" class="w-5 text-fitgreen"></i>
+                </div>
+                <div class="text-3xl font-black mt-5">78%</div>
+                <div class="text-xs text-gray-500 mt-2">Goal completion</div>
+            </div>
+
+        </div>
+
+
+        <div class="grid lg:grid-cols-3 gap-5 mt-5">
+
+            <div class="lg:col-span-2 glass rounded-3xl p-6">
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-lg">Weight Progress</h3>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Last 8 weeks
+                        </p>
+                    </div>
+
+                    <span class="text-fitgreen font-bold">
+                        -2.4 kg
+                    </span>
+                </div>
+
+                <div class="h-[300px] mt-6">
+                    <canvas id="progressChart"></canvas>
+                </div>
+
+            </div>
+
+
+            <div class="glass rounded-3xl p-6">
+
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-lg">Today's Tasks</h3>
+                    <span class="text-xs text-fitgreen">3/5</span>
+                </div>
+
+                <div class="space-y-3 mt-6">
+
+                    <label class="flex items-center gap-3 p-4 rounded-xl bg-white/[.03] cursor-pointer">
+                        <input type="checkbox" checked class="accent-[#A3FF12]">
+                        <span class="text-sm">Drink 2.5L water</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-4 rounded-xl bg-white/[.03] cursor-pointer">
+                        <input type="checkbox" checked class="accent-[#A3FF12]">
+                        <span class="text-sm">Morning walk</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-4 rounded-xl bg-white/[.03] cursor-pointer">
+                        <input type="checkbox" checked class="accent-[#A3FF12]">
+                        <span class="text-sm">Protein target</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-4 rounded-xl bg-white/[.03] cursor-pointer">
+                        <input type="checkbox" class="accent-[#A3FF12]">
+                        <span class="text-sm">Workout completed</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-4 rounded-xl bg-white/[.03] cursor-pointer">
+                        <input type="checkbox" class="accent-[#A3FF12]">
+                        <span class="text-sm">7+ hours sleep</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- WORKOUT LIBRARY -->
+<!-- ========================================================= -->
+
+<section class="py-28 bg-white/[.015]">
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
+
+        <div class="flex justify-between items-end mb-10">
+
+            <div>
+                <p class="text-fitgreen text-sm font-bold uppercase tracking-widest">
+                    Workout Library
+                </p>
+
+                <h2 class="text-4xl font-black mt-2">
+                    Train with purpose.
+                </h2>
+            </div>
+
+            <button class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white">
+                View all
+                <i data-lucide="arrow-right" class="w-4"></i>
+            </button>
+
+        </div>
+
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+            <div class="workout-card glass rounded-3xl p-5">
+
+                <div class="h-40 rounded-2xl bg-gradient-to-br from-green-500/20 to-black flex items-center justify-center">
+                    <i data-lucide="dumbbell" class="w-16 h-16 text-fitgreen"></i>
+                </div>
+
+                <div class="flex justify-between mt-5">
+                    <span class="text-[10px] text-fitgreen bg-fitgreen/10 px-2 py-1 rounded-full">
+                        BEGINNER
+                    </span>
+                    <span class="text-xs text-gray-500">25 min</span>
+                </div>
+
+                <h3 class="font-bold text-lg mt-3">Full Body</h3>
+
+                <p class="text-xs text-gray-500 mt-2">
+                    Build a strong foundation.
+                </p>
+
+                <button onclick="showToast('Workout started!')"
+                        class="w-full mt-5 bg-white/5 py-3 rounded-xl text-sm font-bold hover:bg-fitgreen hover:text-black transition">
+                    Start Workout
+                </button>
+
+            </div>
+
+
+            <div class="workout-card glass rounded-3xl p-5">
+
+                <div class="h-40 rounded-2xl bg-gradient-to-br from-blue-500/20 to-black flex items-center justify-center">
+                    <i data-lucide="activity" class="w-16 h-16 text-blue-400"></i>
+                </div>
+
+                <div class="flex justify-between mt-5">
+                    <span class="text-[10px] text-blue-400 bg-blue-400/10 px-2 py-1 rounded-full">
+                        INTERMEDIATE
+                    </span>
+                    <span class="text-xs text-gray-500">45 min</span>
+                </div>
+
+                <h3 class="font-bold text-lg mt-3">Push Day</h3>
+
+                <p class="text-xs text-gray-500 mt-2">
+                    Chest, shoulders and triceps.
+                </p>
+
+                <button onclick="showToast('Workout started!')"
+                        class="w-full mt-5 bg-white/5 py-3 rounded-xl text-sm font-bold hover:bg-fitgreen hover:text-black transition">
+                    Start Workout
+                </button>
+
+            </div>
+
+
+            <div class="workout-card glass rounded-3xl p-5">
+
+                <div class="h-40 rounded-2xl bg-gradient-to-br from-orange-500/20 to-black flex items-center justify-center">
+                    <i data-lucide="flame" class="w-16 h-16 text-orange-400"></i>
+                </div>
+
+                <div class="flex justify-between mt-5">
+                    <span class="text-[10px] text-orange-400 bg-orange-400/10 px-2 py-1 rounded-full">
+                        FAT LOSS
+                    </span>
+                    <span class="text-xs text-gray-500">35 min</span>
+                </div>
+
+                <h3 class="font-bold text-lg mt-3">HIIT Burn</h3>
+
+                <p class="text-xs text-gray-500 mt-2">
+                    High-intensity calorie burner.
+                </p>
+
+                <button onclick="showToast('Workout started!')"
+                        class="w-full mt-5 bg-white/5 py-3 rounded-xl text-sm font-bold hover:bg-fitgreen hover:text-black transition">
+                    Start Workout
+                </button>
+
+            </div>
+
+
+            <div class="workout-card glass rounded-3xl p-5">
+
+                <div class="h-40 rounded-2xl bg-gradient-to-br from-purple-500/20 to-black flex items-center justify-center">
+                    <i data-lucide="heart-pulse" class="w-16 h-16 text-purple-400"></i>
+                </div>
+
+                <div class="flex justify-between mt-5">
+                    <span class="text-[10px] text-purple-400 bg-purple-400/10 px-2 py-1 rounded-full">
+                        RECOVERY
+                    </span>
+                    <span class="text-xs text-gray-500">20 min</span>
+                </div>
+
+                <h3 class="font-bold text-lg mt-3">Mobility Flow</h3>
+
+                <p class="text-xs text-gray-500 mt-2">
+                    Improve flexibility and recovery.
+                </p>
+
+                <button onclick="showToast('Workout started!')"
+                        class="w-full mt-5 bg-white/5 py-3 rounded-xl text-sm font-bold hover:bg-fitgreen hover:text-black transition">
+                    Start Workout
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- CONTACT -->
+<!-- ========================================================= -->
+
+<section id="contact" class="py-28">
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
+
+        <div class="grid lg:grid-cols-2 gap-16">
+
+            <div>
+
+                <p class="text-fitgreen text-sm font-bold uppercase tracking-widest">
+                    Contact Us
+                </p>
+
+                <h2 class="text-4xl lg:text-5xl font-black mt-3">
+                    Let's talk
+                    <span class="gradient-text">fitness.</span>
+                </h2>
+
+                <p class="text-gray-400 mt-5 max-w-lg leading-relaxed">
+                    Have a question, suggestion or technical issue?
+                    Send us a message and our team will get back to you.
+                </p>
+
+                <div class="space-y-4 mt-10">
+
+                    <div class="glass rounded-2xl p-5 flex gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-fitgreen/10 flex items-center justify-center">
+                            <i data-lucide="mail" class="text-fitgreen"></i>
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-gray-500">EMAIL</p>
+                            <p class="font-semibold mt-1">
+                                hello@aifittrack.com
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-2xl p-5 flex gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-blue-400/10 flex items-center justify-center">
+                            <i data-lucide="message-circle" class="text-blue-400"></i>
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-gray-500">SUPPORT</p>
+                            <p class="font-semibold mt-1">
+                                Available 24/7
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="glass rounded-[32px] p-7">
+
+                <form onsubmit="submitContact(event)">
+
+                    <div class="grid sm:grid-cols-2 gap-4">
+
+                        <div>
+                            <label class="text-xs text-gray-500">NAME</label>
+                            <input id="contactName"
+                                   required
+                                   class="w-full mt-2 bg-white/5 rounded-xl px-4 py-3"
+                                   placeholder="Your name">
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500">EMAIL</label>
+                            <input id="contactEmail"
+                                   type="email"
+                                   required
+                                   class="w-full mt-2 bg-white/5 rounded-xl px-4 py-3"
+                                   placeholder="you@example.com">
+                        </div>
+
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="text-xs text-gray-500">SUBJECT</label>
+
+                        <select class="w-full mt-2 bg-[#15191e] rounded-xl px-4 py-3">
+                            <option>General Question</option>
+                            <option>Technical Support</option>
+                            <option>Fitness Plan</option>
+                            <option>Partnership</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="text-xs text-gray-500">MESSAGE</label>
+
+                        <textarea required
+                                  rows="6"
+                                  class="w-full mt-2 bg-white/5 rounded-xl px-4 py-3"
+                                  placeholder="Write your message..."></textarea>
+                    </div>
+
+                    <button class="w-full mt-5 bg-fitgreen text-black font-black py-4 rounded-xl">
+                        Send Message
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- FEEDBACK -->
+<!-- ========================================================= -->
+
+<section class="py-28 bg-white/[.015]">
+
+    <div class="max-w-3xl mx-auto px-5 text-center">
+
+        <p class="text-fitgreen text-sm font-bold uppercase tracking-widest">
+            Feedback
+        </p>
+
+        <h2 class="text-4xl font-black mt-3">
+            Help us make FitTrack better.
+        </h2>
+
+        <p class="text-gray-400 mt-4">
+            Your feedback helps us improve the experience.
+        </p>
+
+        <div class="glass rounded-[32px] p-8 mt-10 text-left">
+
+            <div class="text-center">
+
+                <p class="text-sm text-gray-500">
+                    How would you rate your experience?
+                </p>
+
+                <div id="stars" class="flex justify-center gap-3 mt-5">
+
+                    <button onclick="setRating(1)" class="star text-gray-600 text-4xl">★</button>
+                    <button onclick="setRating(2)" class="star text-gray-600 text-4xl">★</button>
+                    <button onclick="setRating(3)" class="star text-gray-600 text-4xl">★</button>
+                    <button onclick="setRating(4)" class="star text-gray-600 text-4xl">★</button>
+                    <button onclick="setRating(5)" class="star text-gray-600 text-4xl">★</button>
+
+                </div>
+
+            </div>
+
+            <textarea id="feedbackText"
+                      rows="5"
+                      class="w-full mt-8 bg-white/5 rounded-2xl px-5 py-4"
+                      placeholder="Tell us what you think..."></textarea>
+
+            <button onclick="submitFeedback()"
+                    class="w-full mt-5 bg-fitgreen text-black font-black py-4 rounded-xl">
+                Submit Feedback
+            </button>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
+
+<footer class="border-t border-white/10 py-12">
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
+
+        <div class="grid md:grid-cols-4 gap-10">
+
+            <div class="md:col-span-2">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="w-10 h-10 rounded-xl bg-fitgreen text-black flex items-center justify-center font-black">
+                        FT
+                    </div>
+
+                    <span class="font-black text-lg">
+                        AI<span class="text-fitgreen">FitTrack</span>
+                    </span>
+
+                </div>
+
+                <p class="text-gray-500 max-w-md mt-5 text-sm leading-relaxed">
+                    An AI-powered fitness platform designed to help
+                    people understand their body, build better habits
+                    and train with purpose.
+                </p>
+
+            </div>
+
+            <div>
+                <h4 class="font-bold">Platform</h4>
+
+                <div class="space-y-3 text-sm text-gray-500 mt-5">
+                    <a href="#features" class="block hover:text-white">Features</a>
+                    <a href="#workouts" class="block hover:text-white">Workouts</a>
+                    <a href="#dashboard" class="block hover:text-white">Dashboard</a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-bold">Company</h4>
+
+                <div class="space-y-3 text-sm text-gray-500 mt-5">
+                    <a href="#contact" class="block hover:text-white">Contact</a>
+                    <button onclick="openModal('loginModal')" class="block hover:text-white">
+                        Login
+                    </button>
+                    <button onclick="openModal('signupModal')" class="block hover:text-white">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="border-t border-white/10 mt-12 pt-7 flex flex-col md:flex-row justify-between gap-4 text-xs text-gray-600">
+
+            <p>
+                © 2026 AI FitTrack. All rights reserved.
+            </p>
+
+            <p>
+                Built with HTML • Tailwind CSS • JavaScript • Node.js
+            </p>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- ========================================================= -->
+<!-- LOGIN MODAL -->
+<!-- ========================================================= -->
+
+<div id="loginModal"
+     class="modal fixed inset-0 z-[100] items-center justify-center bg-black/70 backdrop-blur-md px-5">
+
+    <div class="glass rounded-[30px] p-8 max-w-md w-full relative">
+
+        <button onclick="closeModal('loginModal')"
+                class="absolute right-5 top-5 text-gray-500 hover:text-white">
+            <i data-lucide="x"></i>
+        </button>
+
+        <div class="text-center">
+
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-fitgreen text-black flex items-center justify-center font-black">
+                FT
+            </div>
+
+            <h2 class="text-3xl font-black mt-5">
+                Welcome Back
+            </h2>
+
+            <p class="text-gray-500 text-sm mt-2">
+                Continue your fitness journey.
+            </p>
+
+        </div>
+
+        <form onsubmit="login(event)" class="mt-8">
+
+            <input id="loginEmail"
+                   type="email"
+                   required
+                   placeholder="Email address"
+                   class="w-full bg-white/5 rounded-xl px-4 py-4">
+
+            <input id="loginPassword"
+                   type="password"
+                   required
+                   placeholder="Password"
+                   class="w-full bg-white/5 rounded-xl px-4 py-4 mt-4">
+
+            <button class="w-full bg-fitgreen text-black font-black py-4 rounded-xl mt-5">
+                Login
+            </button>
+
+        </form>
+
+        <p class="text-center text-xs text-gray-500 mt-5">
+            Don't have an account?
+            <button onclick="switchModal('loginModal','signupModal')"
+                    class="text-fitgreen font-bold">
+                Create one
+            </button>
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- SIGNUP MODAL -->
+<!-- ========================================================= -->
+
+<div id="signupModal"
+     class="modal fixed inset-0 z-[100] items-center justify-center bg-black/70 backdrop-blur-md px-5">
+
+    <div class="glass rounded-[30px] p-8 max-w-lg w-full relative">
+
+        <button onclick="closeModal('signupModal')"
+                class="absolute right-5 top-5 text-gray-500 hover:text-white">
+            <i data-lucide="x"></i>
+        </button>
+
+        <h2 class="text-3xl font-black">
+            Create your account
+        </h2>
+
+        <p class="text-gray-500 text-sm mt-2">
+            Start building your personalized fitness journey.
+        </p>
+
+        <form onsubmit="signup(event)" class="mt-7">
+
+            <input id="signupName"
+                   required
+                   placeholder="Full name"
+                   class="w-full bg-white/5 rounded-xl px-4 py-4">
+
+            <input id="signupEmail"
+                   type="email"
+                   required
+                   placeholder="Email address"
+                   class="w-full bg-white/5 rounded-xl px-4 py-4 mt-4">
+
+            <input id="signupPassword"
+                   type="password"
+                   required
+                   minlength="6"
+                   placeholder="Create password"
+                   class="w-full bg-white/5 rounded-xl px-4 py-4 mt-4">
+
+            <div class="grid grid-cols-2 gap-4 mt-4">
+
+                <input id="signupHeight"
+                       type="number"
+                       placeholder="Height cm"
+                       class="bg-white/5 rounded-xl px-4 py-4">
+
+                <input id="signupWeight"
+                       type="number"
+                       placeholder="Weight kg"
+                       class="bg-white/5 rounded-xl px-4 py-4">
+
+            </div>
+
+            <button class="w-full bg-fitgreen text-black font-black py-4 rounded-xl mt-5">
+                Create Account
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- TOAST -->
+<!-- ========================================================= -->
+
+<div id="toast"
+     class="toast fixed right-5 bottom-5 z-[200] glass rounded-2xl px-5 py-4 flex items-center gap-3">
+
+    <div class="w-9 h-9 rounded-xl bg-fitgreen text-black flex items-center justify-center">
+        <i data-lucide="check" class="w-5"></i>
+    </div>
+
+    <div>
+        <p class="font-bold text-sm">Success</p>
+        <p id="toastMessage" class="text-xs text-gray-400"></p>
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================================================= -->
+
+<script>
+
+    // Initialize Icons
+    lucide.createIcons();
+
+
+    // ========================================================
+    // MODALS
+    // ========================================================
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    function switchModal(oldId, newId) {
+        closeModal(oldId);
+        openModal(newId);
+    }
+
+
+    // ========================================================
+    // THEME
+    // ========================================================
+
+    function toggleTheme() {
+
+        document.body.classList.toggle('light-mode');
+
+        const isLight =
+            document.body.classList.contains('light-mode');
+
+        localStorage.setItem('fitTheme', isLight ? 'light' : 'dark');
+
+        showToast(
+            isLight
+                ? 'Light mode enabled'
+                : 'Dark mode enabled'
+        );
+    }
+
+
+    // ========================================================
+    // TOAST
+    // ========================================================
+
+    let toastTimeout;
+
+    function showToast(message) {
+
+        const toast =
+            document.getElementById('toast');
+
+        document.getElementById('toastMessage')
+            .textContent = message;
+
+        toast.classList.add('show');
+
+        clearTimeout(toastTimeout);
+
+        toastTimeout =
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+    }
+
+
+    // ========================================================
+    // AI FITNESS ENGINE
+    // ========================================================
+
+    function generatePlan() {
+
+        const age =
+            Number(document.getElementById('age').value);
+
+        const height =
+            Number(document.getElementById('height').value);
+
+        const weight =
+            Number(document.getElementById('weight').value);
+
+        const gender =
+            document.getElementById('gender').value;
+
+        const goal =
+            document.getElementById('goal').value;
+
+        const activity =
+            Number(document.getElementById('activity').value);
+
+
+        if (!age || !height || !weight) {
+
+            showToast(
+                'Please enter all body measurements.'
+            );
+
+            return;
+        }
+
+
+        // BMI
+
+        const heightMeters =
+            height / 100;
+
+        const bmi =
+            weight / (heightMeters * heightMeters);
+
+        document.getElementById('bmiResult')
+            .textContent = bmi.toFixed(1);
+
+
+        let bmiStatus = '';
+
+        if (bmi < 18.5) {
+            bmiStatus = 'Below typical BMI range';
+        }
+        else if (bmi < 25) {
+            bmiStatus = 'Within typical BMI range';
+        }
+        else if (bmi < 30) {
+            bmiStatus = 'Above typical BMI range';
+        }
+        else {
+            bmiStatus = 'High BMI range';
+        }
+
+        document.getElementById('bmiStatus')
+            .textContent = bmiStatus;
+
+
+        // BMR
+
+        let bmr;
+
+        if (gender === 'male') {
+
+            bmr =
+                10 * weight +
+                6.25 * height -
+                5 * age +
+                5;
+
+        } else {
+
+            bmr =
+                10 * weight +
+                6.25 * height -
+                5 * age -
+                161;
+        }
+
+
+        let calories =
+            Math.round(bmr * activity);
+
+
+        // Goal adjustment
+
+        if (goal === 'muscle') {
+            calories += 250;
+        }
+
+        if (goal === 'fatloss') {
+            calories -= 400;
+        }
+
+        if (goal === 'strength') {
+            calories += 150;
+        }
+
+
+        document.getElementById('calorieResult')
+            .textContent = calories;
+
+
+        // Recommendation
+
+        let recommendation = '';
+
+        if (goal === 'muscle') {
+
+            recommendation =
+                `Your current profile is suitable for a structured `
+                + `lean-muscle phase. Aim for progressive resistance `
+                + `training 4–5 days per week, adequate protein intake `
+                + `and a modest calorie surplus. Focus on compound `
+                + `movements and gradually increase training volume.`;
+
+        }
+
+        else if (goal === 'fatloss') {
+
+            recommendation =
+                `For fat loss, combine resistance training with `
+                + `moderate cardio and maintain a sustainable calorie `
+                + `deficit. Prioritize protein-rich foods, sleep and `
+                + `daily movement rather than relying only on cardio.`;
+
+        }
+
+        else if (goal === 'strength') {
+
+            recommendation =
+                `Your plan should prioritize progressive overload `
+                + `with compound lifts. Use lower-to-moderate `
+                + `repetition ranges, adequate rest periods and `
+                + `consistent recovery.`;
+
+        }
+
+        else {
+
+            recommendation =
+                `Build a balanced routine containing strength `
+                + `training, cardiovascular activity, mobility and `
+                + `recovery. Consistency should be your primary goal.`;
+        }
+
+
+        document.getElementById('recommendation')
+            .textContent = recommendation;
+
+
+        // Weekly schedule
+
+        let workouts;
+
+        if (goal === 'fatloss') {
+
+            workouts = [
+                'HIIT',
+                'Strength',
+                'Cardio',
+                'Recovery',
+                'Strength',
+                'Cardio',
+                'Rest'
+            ];
+
+        } else {
+
+            workouts = [
+                'Push',
+                'Pull',
+                'Legs',
+                'Recovery',
+                'Upper',
+                'Lower',
+                'Rest'
+            ];
+        }
+
+
+        const days =
+            ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+
+        document.getElementById('weeklyPlan')
+            .innerHTML =
+            days.map((day,index) => `
+                <div class="bg-white/[.03] rounded-xl p-4">
+                    <p class="text-xs text-gray-500">${day}</p>
+                    <p class="font-semibold mt-2">${workouts[index]}</p>
+                </div>
+            `).join('');
+
+
+        showToast(
+            'Your AI fitness plan has been generated!'
+        );
+
+    }
+
+
+    // ========================================================
+    // SIGNUP
+    // ========================================================
+
+    function signup(event) {
+
+        event.preventDefault();
+
+        const user = {
+
+            name:
+                document.getElementById('signupName').value,
+
+            email:
+                document.getElementById('signupEmail').value,
+
+            password:
+                document.getElementById('signupPassword').value,
+
+            height:
+                document.getElementById('signupHeight').value,
+
+            weight:
+                document.getElementById('signupWeight').value
+        };
+
+
+        localStorage.setItem(
+            'fittrackUser',
+            JSON.stringify(user)
+        );
+
+
+        closeModal('signupModal');
+
+        showToast(
+            'Account created successfully!'
+        );
+
+    }
+
+
+    // ========================================================
+    // LOGIN
+    // ========================================================
+
+    function login(event) {
+
+        event.preventDefault();
+
+        const email =
+            document.getElementById('loginEmail').value;
+
+        const password =
+            document.getElementById('loginPassword').value;
+
+        const stored =
+            JSON.parse(
+                localStorage.getItem('fittrackUser')
+            );
+
+
+        if (
+            stored &&
+            stored.email === email &&
+            stored.password === password
+        ) {
+
+            closeModal('loginModal');
+
+            showToast(
+                `Welcome back, ${stored.name}!`
+            );
+
+        } else {
+
+            showToast(
+                'Demo login: create an account first.'
+            );
+
+        }
+
+    }
+
+
+    // ========================================================
+    // CONTACT
+    // ========================================================
+
+    function submitContact(event) {
+
+        event.preventDefault();
+
+        const name =
+            document.getElementById('contactName').value;
+
+        const email =
+            document.getElementById('contactEmail').value;
+
+
+        const contact = {
+
+            name,
+            email,
+            date:
+                new Date().toISOString()
+
+        };
+
+
+        localStorage.setItem(
+            'fittrackContact',
+            JSON.stringify(contact)
+        );
+
+
+        event.target.reset();
+
+        showToast(
+            'Your message has been sent!'
+        );
+
+    }
+
+
+    // ========================================================
+    // FEEDBACK
+    // ========================================================
+
+    let selectedRating = 0;
+
+
+    function setRating(rating) {
+
+        selectedRating = rating;
+
+        document.querySelectorAll('.star')
+            .forEach((star,index) => {
+
+                if (index < rating) {
+
+                    star.classList.remove(
+                        'text-gray-600'
+                    );
+
+                    star.classList.add(
+                        'text-fitgreen'
+                    );
+
+                } else {
+
+                    star.classList.remove(
+                        'text-fitgreen'
+                    );
+
+                    star.classList.add(
+                        'text-gray-600'
+                    );
+                }
+
+            });
+
+    }
+
+
+    function submitFeedback() {
+
+        const text =
+            document.getElementById('feedbackText').value;
+
+        if (!selectedRating) {
+
+            showToast(
+                'Please select a rating.'
+            );
+
+            return;
+        }
+
+        if (!text.trim()) {
+
+            showToast(
+                'Please write some feedback.'
+            );
+
+            return;
+        }
+
+
+        const feedback = {
+
+            rating: selectedRating,
+
+            message: text,
+
+            date:
+                new Date().toISOString()
+        };
+
+
+        localStorage.setItem(
+            'fittrackFeedback',
+            JSON.stringify(feedback)
+        );
+
+
+        document.getElementById('feedbackText')
+            .value = '';
+
+        setRating(0);
+
+        showToast(
+            'Thank you for your feedback!'
+        );
+
+    }
+
+
+    // ========================================================
+    // CHART
+    // ========================================================
+
+    const chartCanvas =
+        document.getElementById('progressChart');
+
+    new Chart(chartCanvas, {
+
+        type:'line',
+
+        data:{
+
+            labels:[
+                'Week 1',
+                'Week 2',
+                'Week 3',
+                'Week 4',
+                'Week 5',
+                'Week 6',
+                'Week 7',
+                'Week 8'
+            ],
+
+            datasets:[{
+
+                label:'Weight',
+
+                data:[
+                    82.4,
+                    82.0,
+                    81.7,
+                    81.2,
+                    81.0,
+                    80.7,
+                    80.3,
+                    80.0
+                ],
+
+                borderColor:'#A3FF12',
+
+                backgroundColor:'rgba(163,255,18,.08)',
+
+                fill:true,
+
+                tension:.4,
+
+                pointRadius:4,
+
+                pointBackgroundColor:'#A3FF12'
+
+            }]
+        },
+
+        options:{
+
+            responsive:true,
+
+            maintainAspectRatio:false,
+
+            plugins:{
+
+                legend:{
+                    display:false
+                }
+
+            },
+
+            scales:{
+
+                y:{
+                    grid:{
+                        color:'rgba(255,255,255,.05)'
+                    },
+
+                    ticks:{
+                        color:'#6b7280'
+                    }
+                },
+
+                x:{
+                    grid:{
+                        display:false
+                    },
+
+                    ticks:{
+                        color:'#6b7280'
+                    }
+                }
+
+            }
+
+        }
+
+    });
+
+
+    // ========================================================
+    // LOAD THEME
+    // ========================================================
+
+    if (
+        localStorage.getItem('fitTheme') === 'light'
+    ) {
+
+        document.body.classList.add('light-mode');
+
+    }
+
+
+    // ========================================================
+    // CLOSE MODAL ON OUTSIDE CLICK
+    // ========================================================
+
+    document.querySelectorAll('.modal')
+        .forEach(modal => {
+
+            modal.addEventListener(
+                'click',
+                function(event) {
+
+                    if (event.target === modal) {
+
+                        modal.classList.remove('active');
+
+                    }
+
+                }
+            );
+
+        });
+
+
+    lucide.createIcons();
+
+</script>
+
+
+<!-- ========================================================= -->
+<!-- NODE.JS / EXPRESS BACKEND REFERENCE -->
+<!-- ========================================================= -->
+
+<!--
+
+IMPORTANT:
+
+Node.js cannot execute directly inside a browser HTML file.
+
+If your teacher requires an actual Node.js backend, create
+server.js separately.
+
+The following is the backend architecture that can be used
+with this exact frontend.
+
+---------------------------------------------------------------
+
+const express = require("express");
+const path = require("path");
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(express.static("public"));
+
+app.post("/api/login", (req, res) => {
+
+    const { email, password } = req.body;
+
+    // Check database here
+
+    res.json({
+        success: true,
+        message: "Login successful"
+    });
+
+});
+
+app.post("/api/signup", (req, res) => {
+
+    const {
+        name,
+        email,
+        password,
+        height,
+        weight
+    } = req.body;
+
+    // Save user to database here
+
+    res.json({
+        success: true,
+        message: "Account created"
+    });
+
+});
+
+app.post("/api/contact", (req, res) => {
+
+    const {
+        name,
+        email,
+        subject,
+        message
+    } = req.body;
+
+    // Save contact request
+
+    res.json({
+        success: true,
+        message: "Message received"
+    });
+
+});
+
+app.post("/api/feedback", (req, res) => {
+
+    const {
+        rating,
+        message
+    } = req.body;
+
+    // Save feedback
+
+    res.json({
+        success: true,
+        message: "Feedback received"
+    });
+
+});
+
+app.listen(3000, () => {
+
+    console.log(
+        "AI FitTrack running on http://localhost:3000"
+    );
+
+});
+
+---------------------------------------------------------------
+
+Recommended project architecture:
+
+AI-FitTrack/
+│
+├── index.html
+├── server.js
+├── package.json
+│
+└── node_modules/
+
+Run:
+
+npm init -y
+
+npm install express
+
+node server.js
+
+---------------------------------------------------------------
+
+For a REAL production version, add MongoDB:
+
+Frontend
+    ↓
+HTML + Tailwind + JavaScript
+    ↓
+Node.js + Express
+    ↓
+REST API
+    ↓
+MongoDB
+    ↓
+AI Recommendation Engine
+
+-->
+
+</body>
+</html>
